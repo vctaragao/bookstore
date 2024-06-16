@@ -1,0 +1,11 @@
+development:
+  dialect: postgres
+  datasource: host=localhost port=8765 dbname=bookstore user=bookstore password=password sslmode=disable
+  dir: migrations/postgres
+  table: gorp_migrations
+
+production:
+  dialect: postgres
+  datasource: host=${DB_HOST} dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} sslmode=required
+  dir: migrations/postgres
+  table: gorp_migrations

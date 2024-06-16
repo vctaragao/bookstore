@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "8765:5432"
+    networks:
+      - services_network
+    environment:
+      POSTGRES_DB: ${DB_NAME:?database name no set}
+      POSTGRES_USER: ${DB_USER:?database user no set}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?database password no set}
+
+  web:
+    build: .
+    tty: true
+    restart: always
+    ports:
+      - "7777:7777"
+    environment:
+      DB_USER: ${DB_USER:?database user no set}
+      DB_NAME: ${DB_NAME:?database name no set}
+      DB_HOST: ${DB_HOST:?database host not set}
+      DB_PORT: ${DB_PORT:?database port not set}
+      DB_PASSWORD: ${DB_PASSWORD:?database password no set}
+    networks:
+      - services_network
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+          target: /
+    depends_on:
+      - db
+    links:
+      - db
+
+networks:
+  services_network:
