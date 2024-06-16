@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+
+FROM golang:1.22 AS build-stage
+
+WORKDIR /api
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . ./
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /book-crud-api ./cmd/main.go
+
+FROM build-stage AS create-env-file-stage
+
+RUN --mount=type=secret,id=DB_HOST
+RUN --mount=type=secret,id=DB_PORT
+RUN --mount=type=secret,id=DB_NAME
+RUN --mount=type=secret,id=DB_USER
+RUN --mount=type=secret,id=DB_PASSWORD
+
+RUN echo "DB_HOST=$(cat /run/secrets/DB_HOST)" >> .env
+RUN echo "DB_PORT=$(cat /run/secrets/DB_PORT)" >> .env
+RUN echo "DB_NAME=$(cat /run/secrets/DB_NAME)" >> .env
+RUN echo "DB_USER=$(cat /run/secrets/DB_USER)" >> .env
+RUN echo "DB_PASSWORD=$(cat /run/secrets/DB_PASSWORD)" >> .env
+
+FROM gcr.io/distroless/base-debian11 AS build-release-stage
+
+WORKDIR /
+
+COPY --from=build-stage /book-crud-api /book-crud-api
+COPY --from=build-stage ./migrations /migrations
+
+COPY --from=create-env-file-stage ./.env /.env
+
+EXPOSE 7777
+
+USER nonroot:nonroot
+
+ENTRYPOINT [ "/book-crud-api" ]

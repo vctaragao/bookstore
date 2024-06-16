@@ -25,7 +25,13 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./container
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+          secrets: |
+            "DB_HOST=${{ secrets.DB_HOST }}"
+            "DB_PORT=${{ secrets.DB_PORT }}"
+            "DB_NAME=${{ secrets.DB_NAME }}"
+            "DB_USER=${{ secrets.DB_USER }}"
+            "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
