@@ -11,12 +11,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/vctaragao/book-crud/internal/book"
 	"github.com/vctaragao/book-crud/internal/infra/database"
 	"github.com/vctaragao/book-crud/internal/infra/http/handler"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("unable to load .env file: %v", err)
+	}
+
 	dbConn := database.NewConn()
 
 	if err := database.Migrate(dbConn); err != nil {
